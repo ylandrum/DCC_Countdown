@@ -95,7 +95,7 @@ $titlePanel.Add_Paint({
 
     # Subtitle
     $brushSub = New-Object System.Drawing.SolidBrush($cOrange)
-    $g.DrawString("A Parade of Horribles  *  Book 9", $fontSub, $brushSub, 57, 46)
+    $g.DrawString("A Parade of Horribles  *  Book 8", $fontSub, $brushSub, 57, 46)
     $brushSub.Dispose()
 
     # Release line
