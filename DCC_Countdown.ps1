@@ -222,7 +222,7 @@ $progressPanel.Add_Paint({
     $pen.Dispose()
 
     # Percent text
-    $pctText = "{0:N1}% of the wait is over" -f ($pct * 1000)
+    $pctText = "{0:N1}% of the wait is over" -f ($pct * 100)
     $brushTxt = New-Object System.Drawing.SolidBrush($cWhite)
     $g.DrawString($pctText, $fontSmall, $brushTxt, 4, 2)
     $brushTxt.Dispose()
