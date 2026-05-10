@@ -231,11 +231,14 @@ $form.Controls.Add($progressPanel)
 
 # == Flavor text ===============================================================
 $flavorLines = @(
-    '"The dungeon waits for no one." - Carl, probably',
     '"Stay alive long enough to read it." - Donut, definitely',
     '"Every second counts. The apocalypse is scheduled." - Matt Dinniman',
     '"The System has calculated your patience level: insufficient." - Floor Boss',
-    '"Hold on. Level up. Read the book." - Crawler wisdom'
+    '"Hold on. Level up. Read the book." - Crawler wisdom',
+    '"Goddammit, Donut!" - Carl, a lot',
+    '"You will not break me. Fuck you all. You will not break me." - Carl, repeatedly',
+    '"Your creature crapped in my mother`s ashes. This is so not worth it. Not worth it at all." - Mordecai, definitely',
+    '"Glurp on that, motherfucker." - Carl, obviously'  
 )
 $flavor = $flavorLines[(Get-Random -Maximum $flavorLines.Count)]
 
