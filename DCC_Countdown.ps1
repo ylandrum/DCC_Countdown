@@ -9,6 +9,7 @@ $ReleaseDate = [datetime]"2026-05-12 00:00:00"
 # == Main Form ==================================================================
 $form = New-Object System.Windows.Forms.Form
 $form.Text           = "Dungeon Crawler Carl - A Parade of Horribles"
+# Increased height and width of window as a lazy way to center all the elements and not obscure the bottom line
 $form.Size           = New-Object System.Drawing.Size(635, 430)
 $form.StartPosition  = "CenterScreen"
 $form.FormBorderStyle = "FixedSingle"
