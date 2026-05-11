@@ -1,4 +1,4 @@
-﻿# Dungeon Crawler Carl - "A Parade of Horribles" Countdown Timer
+# Dungeon Crawler Carl - "A Parade of Horribles" Countdown Timer
 # Release Date: May 12, 2026
 
 Add-Type -AssemblyName System.Windows.Forms
@@ -9,7 +9,7 @@ $ReleaseDate = [datetime]"2026-05-12 00:00:00"
 # == Main Form ==================================================================
 $form = New-Object System.Windows.Forms.Form
 $form.Text           = "Dungeon Crawler Carl - A Parade of Horribles"
-$form.Size           = New-Object System.Drawing.Size(620, 420)
+$form.Size           = New-Object System.Drawing.Size(635, 430)
 $form.StartPosition  = "CenterScreen"
 $form.FormBorderStyle = "FixedSingle"
 $form.MaximizeBox    = $false
@@ -95,7 +95,7 @@ $titlePanel.Add_Paint({
 
     # Subtitle
     $brushSub = New-Object System.Drawing.SolidBrush($cOrange)
-    $g.DrawString("A Parade of Horribles  *  Book 8", $fontSub, $brushSub, 57, 46)
+    $g.DrawString("A Parade of Horribles  * Book 8", $fontSub, $brushSub, 57, 46)
     $brushSub.Dispose()
 
     # Release line
@@ -115,28 +115,47 @@ $countPanel.BorderStyle = "None"
 $countPanel.Add_Paint({
     param($s, $e)
     $g = $e.Graphics
+    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    
     # Border
     $pen = New-Object System.Drawing.Pen($cBorder, 1)
     $g.DrawRectangle($pen, 0, 0, 579, 179)
     $pen.Dispose()
-    # Corner accents
+    
+    # Corner accents (Corrected orientation)
     $penG = New-Object System.Drawing.Pen($cGold, 2)
-    foreach ($x in @(0, 559)) {
-        foreach ($y in @(0, 159)) {
-            $g.DrawLine($penG, $x, $y, $x+20, $y)
-            $g.DrawLine($penG, $x, $y, $x, $y+20)
-        }
-    }
+    # Top-Left
+    $g.DrawLine($penG, 0, 0, 20, 0)
+    $g.DrawLine($penG, 0, 0, 0, 20)
+    # Top-Right
+    $g.DrawLine($penG, 579, 0, 559, 0)
+    $g.DrawLine($penG, 579, 0, 579, 20)
+    # Bottom-Left
+    $g.DrawLine($penG, 0, 179, 20, 179)
+    $g.DrawLine($penG, 0, 179, 0, 159)
+    # Bottom-Right
+    $g.DrawLine($penG, 579, 179, 559, 179)
+    $g.DrawLine($penG, 579, 179, 579, 159)
     $penG.Dispose()
+
+    # Draw Separator Colons directly to avoid label clipping (Shifted left by 10)
+    $brushColons = New-Object System.Drawing.SolidBrush($cOrange)
+    $fontColons  = New-Object System.Drawing.Font("Consolas", 30, [System.Drawing.FontStyle]::Bold)
+    $g.DrawString(":", $fontColons, $brushColons, 136, 42)
+    $g.DrawString(":", $fontColons, $brushColons, 276, 42)
+    $g.DrawString(":", $fontColons, $brushColons, 416, 42)
+    $brushColons.Dispose()
+    $fontColons.Dispose()
 })
 $form.Controls.Add($countPanel)
 
 # == Unit blocks: Days / Hours / Minutes / Seconds =============================
+# Shifted X values left by 10 to perfectly center within the 580px wide panel
 $units = @(
-    @{ Label="DAYS";    X=30  },
-    @{ Label="HOURS";   X=170 },
-    @{ Label="MINUTES"; X=310 },
-    @{ Label="SECONDS"; X=450 }
+    @{ Label="DAYS";    X=20  },
+    @{ Label="HOURS";   X=160 },
+    @{ Label="MINUTES"; X=300 },
+    @{ Label="SECONDS"; X=440 }
 )
 
 $valueLabels = @{}
@@ -164,26 +183,14 @@ foreach ($u in $units) {
     $val.TextAlign = "MiddleCenter"
     $countPanel.Controls.Add($val)
 
-    # Separator (except last)
-    if ($u.Label -ne "SECONDS") {
-        $sep = New-Object System.Windows.Forms.Label
-        $sep.Text      = ":"
-        $sep.Font      = New-Object System.Drawing.Font("Consolas", 30, [System.Drawing.FontStyle]::Bold)
-        $sep.ForeColor = $cOrange
-        $sep.BackColor = [System.Drawing.Color]::Transparent
-        $sep.Size      = New-Object System.Drawing.Size(20, 80)
-        $sep.Location  = New-Object System.Drawing.Point(([int]$u.X + 120), 36)
-        $sep.TextAlign = "MiddleCenter"
-        $countPanel.Controls.Add($sep)
-    }
-
     $valueLabels[$u.Label] = $val
 }
 
 # == Progress bar area =========================================================
 $progressPanel = New-Object System.Windows.Forms.Panel
-$progressPanel.Size     = New-Object System.Drawing.Size(580, 22)
-$progressPanel.Location = New-Object System.Drawing.Point(20, 300)
+# Height increased from 22 to 28, moved up slightly to point 295
+$progressPanel.Size     = New-Object System.Drawing.Size(580, 28)
+$progressPanel.Location = New-Object System.Drawing.Point(20, 295)
 $progressPanel.BackColor = [System.Drawing.Color]::FromArgb(15, 10, 25)
 
 # Total span from announcement date to release
@@ -198,14 +205,14 @@ $progressPanel.Add_Paint({
     $pct     = [Math]::Max(0, [Math]::Min(1, $elapsed / $totalSpan))
     $filled  = [int]($pct * 576)
 
-    # Track
+    # Track (Thickness increased)
     $brushTrack = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(30,25,45))
-    $g.FillRectangle($brushTrack, 2, 4, 576, 14)
+    $g.FillRectangle($brushTrack, 2, 2, 576, 24)
     $brushTrack.Dispose()
 
     # Fill gradient
     if ($filled -gt 0) {
-        $fillRect = New-Object System.Drawing.Rectangle(2, 4, $filled, 14)
+        $fillRect = New-Object System.Drawing.Rectangle(2, 2, $filled, 24)
         $brushFill = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
             $fillRect,
             $cOrange,
@@ -218,13 +225,13 @@ $progressPanel.Add_Paint({
 
     # Border
     $pen = New-Object System.Drawing.Pen($cBorder, 1)
-    $g.DrawRectangle($pen, 2, 4, 576, 14)
+    $g.DrawRectangle($pen, 2, 2, 576, 24)
     $pen.Dispose()
 
-    # Percent text
-    $pctText = "{0:N1}% of the wait is over" -f ($pct * 100)
+    # Percent text vertically centered
+    $pctText = "{0:N3}% of the wait is over" -f ($pct * 100)
     $brushTxt = New-Object System.Drawing.SolidBrush($cWhite)
-    $g.DrawString($pctText, $fontSmall, $brushTxt, 4, 2)
+    $g.DrawString($pctText, $fontSmall, $brushTxt, 10, 6)
     $brushTxt.Dispose()
 })
 $form.Controls.Add($progressPanel)
@@ -237,7 +244,7 @@ $flavorLines = @(
     '"Hold on. Level up. Read the book." - Crawler wisdom',
     '"Goddammit, Donut!" - Carl, a lot',
     '"You will not break me. Fuck you all. You will not break me." - Carl, repeatedly',
-    '"Your creature crapped in my mother`s ashes. This is so not worth it. Not worth it at all." - Mordecai, definitely',
+    '"Your creature crapped in my mother''s ashes. This is so not worth it. Not worth it at all." - Mordecai, definitely',
     '"Glurp on that, motherfucker." - Carl, obviously'  
 )
 $flavor = $flavorLines[(Get-Random -Maximum $flavorLines.Count)]
@@ -248,14 +255,14 @@ $flavorLabel.Font      = $fontFooter
 $flavorLabel.ForeColor = $cDim
 $flavorLabel.BackColor = $cBg
 $flavorLabel.Size      = New-Object System.Drawing.Size(580, 22)
-$flavorLabel.Location  = New-Object System.Drawing.Point(20, 330)
+$flavorLabel.Location  = New-Object System.Drawing.Point(20, 332)
 $flavorLabel.TextAlign = "MiddleCenter"
 $form.Controls.Add($flavorLabel)
 
 # == Footer bar ================================================================
 $footerPanel = New-Object System.Windows.Forms.Panel
 $footerPanel.Size      = New-Object System.Drawing.Size(620, 36)
-$footerPanel.Location  = New-Object System.Drawing.Point(0, 358)
+$footerPanel.Location  = New-Object System.Drawing.Point(0, 360)
 $footerPanel.BackColor = [System.Drawing.Color]::FromArgb(16, 10, 30)
 
 $footerPanel.Add_Paint({
@@ -265,7 +272,7 @@ $footerPanel.Add_Paint({
     $g.DrawLine($pen, 0, 0, 620, 0)
     $pen.Dispose()
     $brushTxt = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(80,60,30))
-    $g.DrawString("  ***  DUNGEON CRAWLER CARL  *  Matt Dinniman  *  May 12, 2026  ***", $fontSmall, $brushTxt, 80, 10)
+    $g.DrawString("  *** DUNGEON CRAWLER CARL  * Matt Dinniman  * May 12, 2026  ***", $fontSmall, $brushTxt, 80, 10)
     $brushTxt.Dispose()
 })
 $form.Controls.Add($footerPanel)
@@ -289,6 +296,9 @@ $timer.Add_Tick({
         $valueLabels["SECONDS"].ForeColor = $cBlue
         $flavorLabel.Text      = "*** A PARADE OF HORRIBLES IS OUT NOW - GO READ IT! ***"
         $flavorLabel.ForeColor = $cGold
+        
+        $progressPanel.Invalidate()
+        $timer.Stop()
     } else {
         $days    = [int][Math]::Floor($span.TotalDays)
         $hours   = $span.Hours
@@ -300,7 +310,6 @@ $timer.Add_Tick({
         $valueLabels["MINUTES"].Text = "{0:D2}" -f $minutes
         $valueLabels["SECONDS"].Text = "{0:D2}" -f $seconds
 
-        # Pulse seconds orange when under a minute
         if ($days -eq 0 -and $hours -eq 0 -and $minutes -eq 0) {
             $valueLabels["SECONDS"].ForeColor = $cOrange
         } else {
