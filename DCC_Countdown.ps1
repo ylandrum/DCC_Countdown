@@ -4,12 +4,14 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-$ReleaseDate = [datetime]"2026-05-12 00:00:00"
+# Explicitly scoped to the script level to prevent them from dropping out of scope inside UI events
+$script:ReleaseDate  = New-Object System.DateTime(2026, 5, 12, 0, 0, 0)
+$script:AnnounceDate = New-Object System.DateTime(2025, 9, 1, 0, 0, 0)
 
 # == Main Form ==================================================================
 $form = New-Object System.Windows.Forms.Form
 $form.Text           = "Dungeon Crawler Carl - A Parade of Horribles"
-# Increased height and width of window as a lazy way to center all the elements and not obscure the bottom line
+# Form size was wonky, making everything shifted to the right; used the laziest fix possible
 $form.Size           = New-Object System.Drawing.Size(635, 430)
 $form.StartPosition  = "CenterScreen"
 $form.FormBorderStyle = "FixedSingle"
@@ -48,7 +50,7 @@ $fontFooter = Get-Font @("Palatino Linotype","Georgia","Times New Roman") 9 "Ita
 
 # == Title Panel (painted) =====================================================
 $titlePanel = New-Object System.Windows.Forms.Panel
-$titlePanel.Size     = New-Object System.Drawing.Size(620, 90)
+$titlePanel.Size     = New-Object System.Drawing.Size(635, 90)
 $titlePanel.Location = New-Object System.Drawing.Point(0, 0)
 $titlePanel.BackColor = $cBg
 
@@ -57,8 +59,7 @@ $titlePanel.Add_Paint({
     $g = $e.Graphics
     $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
 
-    # Background gradient
-    $rect = New-Object System.Drawing.Rectangle(0, 0, 620, 90)
+    $rect = New-Object System.Drawing.Rectangle(0, 0, 635, 90)
     $brush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
         $rect,
         [System.Drawing.Color]::FromArgb(30, 20, 5),
@@ -68,12 +69,10 @@ $titlePanel.Add_Paint({
     $g.FillRectangle($brush, $rect)
     $brush.Dispose()
 
-    # Bottom border line
     $pen = New-Object System.Drawing.Pen($cBorder, 2)
-    $g.DrawLine($pen, 0, 88, 620, 88)
+    $g.DrawLine($pen, 0, 88, 635, 88)
     $pen.Dispose()
 
-    # Decorative corner marks
     $penGold = New-Object System.Drawing.Pen($cGold, 1)
     $g.DrawLine($penGold,  20, 10,  20, 30)
     $g.DrawLine($penGold,  10, 10,  30, 10)
@@ -81,7 +80,6 @@ $titlePanel.Add_Paint({
     $g.DrawLine($penGold, 590, 10, 610, 10)
     $penGold.Dispose()
 
-    # Icon dot
     $brushGold = New-Object System.Drawing.SolidBrush($cGold)
     $g.FillEllipse($brushGold, 28, 28, 14, 14)
     $brushGold.Dispose()
@@ -89,17 +87,14 @@ $titlePanel.Add_Paint({
     $g.FillEllipse($brushOrange, 31, 31, 8, 8)
     $brushOrange.Dispose()
 
-    # Main title
     $brushTitle = New-Object System.Drawing.SolidBrush($cGold)
     $g.DrawString("DUNGEON CRAWLER CARL", $fontTitle, $brushTitle, 55, 12)
     $brushTitle.Dispose()
 
-    # Subtitle
     $brushSub = New-Object System.Drawing.SolidBrush($cOrange)
     $g.DrawString("A Parade of Horribles  * Book 8", $fontSub, $brushSub, 57, 46)
     $brushSub.Dispose()
 
-    # Release line
     $brushDim = New-Object System.Drawing.SolidBrush($cDim)
     $g.DrawString("RELEASES  MAY 12, 2026", $fontLabel, $brushDim, 57, 68)
     $brushDim.Dispose()
@@ -118,28 +113,21 @@ $countPanel.Add_Paint({
     $g = $e.Graphics
     $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
     
-    # Border
     $pen = New-Object System.Drawing.Pen($cBorder, 1)
     $g.DrawRectangle($pen, 0, 0, 579, 179)
     $pen.Dispose()
     
-    # Corner accents (Corrected orientation)
     $penG = New-Object System.Drawing.Pen($cGold, 2)
-    # Top-Left
     $g.DrawLine($penG, 0, 0, 20, 0)
     $g.DrawLine($penG, 0, 0, 0, 20)
-    # Top-Right
     $g.DrawLine($penG, 579, 0, 559, 0)
     $g.DrawLine($penG, 579, 0, 579, 20)
-    # Bottom-Left
     $g.DrawLine($penG, 0, 179, 20, 179)
     $g.DrawLine($penG, 0, 179, 0, 159)
-    # Bottom-Right
     $g.DrawLine($penG, 579, 179, 559, 179)
     $g.DrawLine($penG, 579, 179, 579, 159)
     $penG.Dispose()
 
-    # Draw Separator Colons directly to avoid label clipping (Shifted left by 10)
     $brushColons = New-Object System.Drawing.SolidBrush($cOrange)
     $fontColons  = New-Object System.Drawing.Font("Consolas", 30, [System.Drawing.FontStyle]::Bold)
     $g.DrawString(":", $fontColons, $brushColons, 136, 42)
@@ -150,8 +138,7 @@ $countPanel.Add_Paint({
 })
 $form.Controls.Add($countPanel)
 
-# == Unit blocks: Days / Hours / Minutes / Seconds =============================
-# Shifted X values left by 10 to perfectly center within the 580px wide panel
+# == Unit blocks ===============================================================
 $units = @(
     @{ Label="DAYS";    X=20  },
     @{ Label="HOURS";   X=160 },
@@ -160,9 +147,7 @@ $units = @(
 )
 
 $valueLabels = @{}
-
 foreach ($u in $units) {
-    # Label
     $lbl = New-Object System.Windows.Forms.Label
     $lbl.Text      = $u.Label
     $lbl.Font      = $fontLabel
@@ -173,7 +158,6 @@ foreach ($u in $units) {
     $lbl.TextAlign = "MiddleCenter"
     $countPanel.Controls.Add($lbl)
 
-    # Value
     $val = New-Object System.Windows.Forms.Label
     $val.Text      = "00"
     $val.Font      = $fontBig
@@ -183,54 +167,70 @@ foreach ($u in $units) {
     $val.Location  = New-Object System.Drawing.Point($u.X, 36)
     $val.TextAlign = "MiddleCenter"
     $countPanel.Controls.Add($val)
-
     $valueLabels[$u.Label] = $val
 }
 
 # == Progress bar area =========================================================
 $progressPanel = New-Object System.Windows.Forms.Panel
-# Height increased from 22 to 28, moved up slightly to point 295
 $progressPanel.Size     = New-Object System.Drawing.Size(580, 28)
 $progressPanel.Location = New-Object System.Drawing.Point(20, 295)
 $progressPanel.BackColor = [System.Drawing.Color]::FromArgb(15, 10, 25)
 
-# Total span from announcement date to release
-$AnnounceDate = [datetime]"2025-09-01"
-$totalSpan    = ($ReleaseDate - $AnnounceDate).TotalSeconds
-
 $progressPanel.Add_Paint({
     param($s, $e)
     $g = $e.Graphics
-    $now     = [datetime]::Now
-    $elapsed = ($now - $AnnounceDate).TotalSeconds
-    $pct     = [Math]::Max(0, [Math]::Min(1, $elapsed / $totalSpan))
-    $filled  = [int]($pct * 576)
+    $now  = [datetime]::Now
+    $span = $script:ReleaseDate - $now
+    
+    if ($span.TotalSeconds -le 0) {
+        $pctText = "100.000% of the wait is over"
+        $filled  = 576
+    } else {
+        # 1. Use pure Decimal types to avoid float rounding
+        $elapsed = [decimal]($now - $script:AnnounceDate).TotalSeconds
+        $total   = [decimal]($script:ReleaseDate - $script:AnnounceDate).TotalSeconds
+        $pct100  = ($elapsed / $total) * 100
+        
+        # 2. Dynamically expand zeroes based on precision
+        $decimals = 3
+        if     ($pct100 -ge 99.999999) { $decimals = 8 }
+        elseif ($pct100 -ge 99.99999)  { $decimals = 7 }
+        elseif ($pct100 -ge 99.9999)   { $decimals = 6 }
+        elseif ($pct100 -ge 99.999)    { $decimals = 5 }
+        elseif ($pct100 -ge 99.99)     { $decimals = 4 }
 
-    # Track (Thickness increased)
+        # 3. Mathematically truncate the exact number of decimal places (No Rounding Up)
+        $multiplier = [Math]::Pow(10, $decimals)
+        $truncated  = [Math]::Truncate($pct100 * $multiplier) / $multiplier
+        
+        # 4. Format to string to ensure trailing zeroes exist (e.g. "99.800")
+        $fmt = "0." + ("0" * $decimals)
+        $formatted = $truncated.ToString($fmt, [System.Globalization.CultureInfo]::InvariantCulture)
+        $pctText = "$formatted% of the wait is over"
+        
+        # 5. Calculate physical bar fill
+        $pctDouble = [double]($elapsed / $total)
+        $pctDouble = [Math]::Max(0, [Math]::Min(1, $pctDouble))
+        $filled    = [int]($pctDouble * 576)
+    }
+
     $brushTrack = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(30,25,45))
     $g.FillRectangle($brushTrack, 2, 2, 576, 24)
     $brushTrack.Dispose()
 
-    # Fill gradient
     if ($filled -gt 0) {
         $fillRect = New-Object System.Drawing.Rectangle(2, 2, $filled, 24)
         $brushFill = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-            $fillRect,
-            $cOrange,
-            $cGold,
-            [System.Drawing.Drawing2D.LinearGradientMode]::Horizontal
+            $fillRect, $cOrange, $cGold, [System.Drawing.Drawing2D.LinearGradientMode]::Horizontal
         )
         $g.FillRectangle($brushFill, $fillRect)
         $brushFill.Dispose()
     }
 
-    # Border
     $pen = New-Object System.Drawing.Pen($cBorder, 1)
     $g.DrawRectangle($pen, 2, 2, 576, 24)
     $pen.Dispose()
 
-    # Percent text vertically centered
-    $pctText = "{0:N3}% of the wait is over" -f ($pct * 100)
     $brushTxt = New-Object System.Drawing.SolidBrush($cWhite)
     $g.DrawString($pctText, $fontSmall, $brushTxt, 10, 6)
     $brushTxt.Dispose()
@@ -262,7 +262,7 @@ $form.Controls.Add($flavorLabel)
 
 # == Footer bar ================================================================
 $footerPanel = New-Object System.Windows.Forms.Panel
-$footerPanel.Size      = New-Object System.Drawing.Size(620, 36)
+$footerPanel.Size      = New-Object System.Drawing.Size(635, 36)
 $footerPanel.Location  = New-Object System.Drawing.Point(0, 360)
 $footerPanel.BackColor = [System.Drawing.Color]::FromArgb(16, 10, 30)
 
@@ -270,7 +270,7 @@ $footerPanel.Add_Paint({
     param($s, $e)
     $g = $e.Graphics
     $pen = New-Object System.Drawing.Pen($cBorder, 1)
-    $g.DrawLine($pen, 0, 0, 620, 0)
+    $g.DrawLine($pen, 0, 0, 635, 0)
     $pen.Dispose()
     $brushTxt = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(80,60,30))
     $g.DrawString("  *** DUNGEON CRAWLER CARL  * Matt Dinniman  * May 12, 2026  ***", $fontSmall, $brushTxt, 80, 10)
@@ -278,13 +278,13 @@ $footerPanel.Add_Paint({
 })
 $form.Controls.Add($footerPanel)
 
-# == Ticker: update every second ===============================================
+# == Ticker ====================================================================
 $timer = New-Object System.Windows.Forms.Timer
 $timer.Interval = 1000
 
 $timer.Add_Tick({
     $now  = [datetime]::Now
-    $span = $ReleaseDate - $now
+    $span = $script:ReleaseDate - $now
 
     if ($span.TotalSeconds -le 0) {
         $valueLabels["DAYS"].Text    = "00"
@@ -324,5 +324,4 @@ $timer.Add_Tick({
 $timer.Start()
 $form.Add_FormClosed({ $timer.Stop(); $timer.Dispose() })
 
-# == Launch ====================================================================
 [System.Windows.Forms.Application]::Run($form)
